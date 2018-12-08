@@ -1,3 +1,4 @@
+use std::env;
 use std::fs::File;
 
 const FIRST_PHOTO_POSITION: usize = 0x2000;
@@ -17,7 +18,7 @@ fn image_raster_pixel_index_from_tile(tile_index: usize, x: usize, y: usize) -> 
 
 // Takes a Game Boy Camera save RAM file and photo index and populates the
 // provided image raster with pixels. Valid index is between 0 and 29.
-fn image_raster_from_game_boy_save_ram(save_file: File, image_raster: &[u8], photo_index: u8) {
+fn image_raster_from_game_boy_save_ram(save_file: &mut File, image_raster: &[u8], photo_index: u8) {
     //   char tile[16];
 
     //   fseek(save_file, FIRST_PHOTO_POSITION + (PHOTO_OFFSET * photo_index), 0);
@@ -69,26 +70,23 @@ fn pgm_from_image_raster(image_raster: &[u8], photo_index: u8) {
 }
 
 fn main() {
-    //     if (argc != 2) {
-    //     printf("Usage: %s <file>\n", argv[0]);
-    //     exit(0);
-    //   }
+    let args: Vec<String> = env::args().collect();
 
-    //   FILE* save_file = fopen(argv[1], "r");
+    if args.len() != 2 {
+        panic!("Usage: {} <file>\n", &args[0]);
+    }
 
-    //   if (save_file == NULL) {
-    //     fprintf(stderr, "Error: could not open file '%s'.\n", argv[1]);
-    //     exit(1);
-    //   }
+    match File::open(&args[1]) {
+        Err(_) => {
+            panic!("Error: could not open file '{}'.\n", &args[1]);
+        }
+        Ok(mut save_file) => {
+            let mut image_raster: [u8; IMAGE_RASTER_SIZE] = [0; IMAGE_RASTER_SIZE];
 
-    //   uint8_t image_raster[IMAGE_RASTER_SIZE];
-
-    //   for (size_t i = 0; i < 30; i++) {
-    //     image_raster_from_game_boy_save_ram(save_file, image_raster, i);
-    //     pgm_from_image_raster(image_raster, i);
-    //   }
-
-    //   fclose(save_file);
-
-    // return 0;
+            for i in 0..30 {
+                image_raster_from_game_boy_save_ram(&mut save_file, &image_raster, i);
+                pgm_from_image_raster(&image_raster, i);
+            }
+        }
+    };
 }
