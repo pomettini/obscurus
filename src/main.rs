@@ -1,5 +1,6 @@
 use std::env;
 use std::fs::File;
+use std::io::BufWriter;
 
 const FIRST_PHOTO_POSITION: usize = 0x2000;
 const PHOTO_OFFSET: usize = 0x1000;
@@ -43,30 +44,25 @@ fn image_raster_from_game_boy_save_ram(save_file: &mut File, image_raster: &[u8]
 // Creates and initializes a PGM file for writing, indicated by filename and
 // returns a pointer to the file stream.
 // filename and postfix can be at most 256 characters long together.
-fn pgm_open_and_initialize(filename: &str, postfix: u8) -> Vec<u8> {
-    //   char full_name[MAX_FILE_NAME_LENGTH];
-    //   sprintf(full_name, "%s-%d.pgm", filename, postfix);
-
-    //   FILE* image = fopen(full_name, "w+");
+fn pgm_open_and_initialize(filename: &str, postfix: u8) -> File {
+    let full_name = format!("{}-{}.pgm", filename, postfix);
+    let image = File::open(full_name).unwrap();
 
     //   fputs("P5\n", image);
     //   fprintf(image, "%d %d\n", PHOTO_TILE_WIDTH * TILE_SIDES, PHOTO_TILE_HEIGHT * TILE_SIDES);
     //   fputs("255\n", image);
 
-    //   return image;
-    Vec::new()
+    image
 }
 
 // Writes an image ("image-<photo_index>.pgm") to disk base on the provided
 // image raster.
 fn pgm_from_image_raster(image_raster: &[u8], photo_index: u8) {
-    //   FILE* image = pgm_open_and_initialize("image", photo_index + 1);
+    let mut image = pgm_open_and_initialize("image", photo_index + 1);
 
-    //   for (size_t i = 0; i < IMAGE_RASTER_SIZE; i++) {
-    //     fputc(image_raster[i] * 85, image);
-    //   }
-
-    //   fclose(image);
+    for i in 0..IMAGE_RASTER_SIZE {
+        image.write_all(image_raster[i] * 85);
+    }
 }
 
 fn main() {
