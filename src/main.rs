@@ -46,7 +46,7 @@ fn image_raster_from_game_boy_save_ram(
 
                 pixel_value = ((tile[j] >> k) & 0x01) + (((tile[j + 1] >> k) & 0x01) << 1);
 
-                pixel_value = pixel_value ^ 3;
+                pixel_value ^= 3;
 
                 image_raster[image_raster_pixel_index_from_tile(i / 2, x - 1, y)] = pixel_value;
 
@@ -102,7 +102,7 @@ fn main() {
     }
 
     match File::open(&args[1]) {
-        Err(_) => {
+        Err(_e) => {
             panic!("Error: could not open file '{}'.\n", &args[1]);
         }
         Ok(mut save_file) => {
@@ -114,4 +114,62 @@ fn main() {
             }
         }
     };
+}
+
+#[cfg(test)]
+mod tests {
+    use std::process::Command;
+
+    #[test]
+    fn test_file_green() {
+        let output = Command::new("./target/debug/obscurus")
+            .arg("gbc.sav")
+            .output()
+            .unwrap();
+
+        assert_eq!(String::from_utf8_lossy(&output.stdout), "");
+
+        let output = Command::new("shasum").arg("image-1.pgm").output().unwrap();
+
+        assert_eq!(
+            String::from_utf8_lossy(&output.stdout),
+            "8de7e105a13eeb6a9f8a4529c86037c25dfa47cc  image-1.pgm\n"
+        );
+
+        clean();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_file_red() {
+        let output = Command::new("./target/debug/obscurus")
+            .arg("gbc.sav")
+            .output()
+            .unwrap();
+
+        assert_eq!(String::from_utf8_lossy(&output.stdout), "");
+
+        let output = Command::new("shasum").arg("image-1.pgm").output().unwrap();
+
+        assert_eq!(
+            String::from_utf8_lossy(&output.stdout),
+            "8de7e105a13eeb6a9f8a4529c86037c25dfa47ff  image-1.pgm\n"
+        );
+
+        clean();
+    }
+
+    fn clean() {
+        let output = Command::new("find")
+            .arg(".")
+            .arg("-name")
+            .arg("*.pgm")
+            .arg("-delete")
+            .output()
+            .unwrap();
+
+        println!("status: {}", output.status);
+        println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+        println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+    }
 }

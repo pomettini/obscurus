@@ -2,5 +2,3 @@
 name = "obscurus"
 version = "0.1.0"
 authors = ["Giorgio Pomettini <giorgio.pomettini@gmail.com>"]
-
-[dependencies]
