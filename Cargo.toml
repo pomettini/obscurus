@@ -1,4 +1,13 @@
 [package]
 name = "obscurus"
 version = "0.1.0"
+
+description = "A photos extractor for the Gameboy Camera"
 authors = ["Giorgio Pomettini <giorgio.pomettini@gmail.com>"]
+categories = ["command-line-utilities"]
+
+keywords = ["gameboy", "camera"]
+
+license  = "MIT"
+repository = "https://github.com/Pomettini/obscurus"
+readme = "readme.md"
