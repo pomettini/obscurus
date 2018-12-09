@@ -1,3 +1,5 @@
+#![cfg_attr(feature="clippy", allow(clippy_pedantic))]
+
 use std::env;
 use std::fs::File;
 use std::io::Read;
@@ -42,9 +44,7 @@ fn image_raster_from_game_boy_save_ram(
             let mut x = 8;
 
             while k < 8 {
-                let mut pixel_value: u8;
-
-                pixel_value = ((tile[j] >> k) & 0x01) + (((tile[j + 1] >> k) & 0x01) << 1);
+                let mut pixel_value = ((tile[j] >> k) & 0x01) + (((tile[j + 1] >> k) & 0x01) << 1);
 
                 pixel_value ^= 3;
 
