@@ -19,6 +19,7 @@ install:
     - cargo -V
 
 test_script:
+    - cargo build
     - cargo test
 
 # 'cargo test' takes care of building for us, so disable Appveyor's build stage. This prevents

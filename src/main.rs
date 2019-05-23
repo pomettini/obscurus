@@ -1,4 +1,4 @@
-#![cfg_attr(feature="clippy", allow(clippy_pedantic))]
+#![cfg_attr(feature = "clippy", allow(clippy_pedantic))]
 
 use std::env;
 use std::fs::File;
@@ -125,11 +125,14 @@ mod tests {
         let output = Command::new("./target/debug/obscurus")
             .arg("gbc.sav")
             .output()
-            .unwrap();
+            .expect("Cannot find save file");
 
         assert_eq!(String::from_utf8_lossy(&output.stdout), "");
 
-        let output = Command::new("shasum").arg("image-1.pgm").output().unwrap();
+        let output = Command::new("shasum")
+            .arg("image-1.pgm")
+            .output()
+            .expect("Cannot find pgm file");
 
         assert_eq!(
             String::from_utf8_lossy(&output.stdout),
@@ -145,11 +148,14 @@ mod tests {
         let output = Command::new("./target/debug/obscurus")
             .arg("gbc.sav")
             .output()
-            .unwrap();
+            .expect("Cannot fins save file");
 
         assert_eq!(String::from_utf8_lossy(&output.stdout), "");
 
-        let output = Command::new("shasum").arg("image-1.pgm").output().unwrap();
+        let output = Command::new("shasum")
+            .arg("image-1.pgm")
+            .output()
+            .expect("Cannot find pgm file");
 
         assert_eq!(
             String::from_utf8_lossy(&output.stdout),
