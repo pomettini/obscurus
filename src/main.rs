@@ -122,6 +122,8 @@ mod tests {
 
     #[test]
     fn test_file_green() {
+        clean();
+
         let output = Command::new("./target/debug/obscurus")
             .arg("gbc.sav")
             .output()
@@ -145,6 +147,8 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_file_red() {
+        clean();
+
         let output = Command::new("./target/debug/obscurus")
             .arg("gbc.sav")
             .output()
@@ -173,9 +177,5 @@ mod tests {
             .arg("-delete")
             .output()
             .unwrap();
-
-        println!("status: {}", output.status);
-        println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
-        println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
     }
 }
