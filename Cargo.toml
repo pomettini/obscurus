@@ -11,3 +11,7 @@ keywords = ["gameboy", "camera"]
 license  = "MIT"
 repository = "https://github.com/Pomettini/obscurus"
 readme = "readme.md"
+
+[dependencies]
+assert_cmd = ">=0.11"
+clap = ">=2"

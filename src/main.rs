@@ -1,11 +1,13 @@
-#![cfg_attr(feature = "clippy", allow(clippy_pedantic))]
+extern crate assert_cmd;
+extern crate clap;
 
-use std::env;
+use clap::*;
 use std::fs::File;
 use std::io::Read;
 use std::io::Seek;
 use std::io::SeekFrom;
 use std::io::Write;
+use std::path::Path;
 
 const FIRST_PHOTO_POSITION: usize = 0x2000;
 const PHOTO_OFFSET: usize = 0x1000;
@@ -31,10 +33,14 @@ fn image_raster_from_game_boy_save_ram(
     let mut tile: [u8; 16] = [0; 16];
 
     let pos = FIRST_PHOTO_POSITION + (PHOTO_OFFSET * photo_index);
-    save_file.seek(SeekFrom::Start(pos as u64)).unwrap();
+    save_file
+        .seek(SeekFrom::Start(pos as u64))
+        .expect("Cannot write to image file");
 
     for i in (0..PHOTO_TILE_WIDTH * PHOTO_TILE_HEIGHT * 2).step_by(2) {
-        save_file.read_exact(&mut tile).unwrap();
+        save_file
+            .read_exact(&mut tile)
+            .expect("Cannot read from .sav file");
 
         let mut j = 0;
         let mut y = 0;
@@ -65,7 +71,7 @@ fn image_raster_from_game_boy_save_ram(
 // filename and postfix can be at most 256 characters long together.
 fn pgm_open_and_initialize(filename: &str, postfix: usize) -> File {
     let full_name = format!("{}-{}.pgm", filename, postfix);
-    let mut image = File::create(full_name).unwrap();
+    let mut image = File::create(full_name).expect("Cannot create image file");
     let mut pgm: String = String::new();
 
     pgm.push_str("P5\n");
@@ -76,7 +82,9 @@ fn pgm_open_and_initialize(filename: &str, postfix: usize) -> File {
     ));
     pgm.push_str("255\n");
 
-    image.write_all(&pgm.as_bytes()).unwrap();
+    image
+        .write_all(&pgm.as_bytes())
+        .expect("Cannot write to image file");
 
     image
 }
@@ -91,19 +99,22 @@ fn pgm_from_image_raster(image_raster: &[u8], photo_index: usize) {
         pgm.push(image_raster[i] * 85);
     }
 
-    image.write_all(&pgm).unwrap();
+    image.write_all(&pgm).expect("Cannot write to image file");
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let matches = App::new("obscurus")
+        .version("0.1")
+        .author("Giorgio Pomettini <giorgio.pomettini@gmail.com>")
+        .arg(Arg::with_name("file").index(1).required(true))
+        .get_matches();
 
-    if args.len() != 2 {
-        panic!("Usage: {} <file>\n", &args[0]);
-    }
+    let file_name = matches.value_of("file").unwrap();
+    let path = Path::new(file_name);
 
-    match File::open(&args[1]) {
+    match File::open(&path) {
         Err(_e) => {
-            panic!("Error: could not open file '{}'.\n", &args[1]);
+            panic!("Error: could not open file '{}'.\n", &file_name);
         }
         Ok(mut save_file) => {
             let mut image_raster: [u8; IMAGE_RASTER_SIZE] = [0; IMAGE_RASTER_SIZE];
@@ -118,18 +129,16 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use assert_cmd::prelude::*;
     use std::process::Command;
 
     #[test]
     fn test_file_green() {
-        clean();
-
-        let output = Command::new("./target/debug/obscurus")
+        Command::cargo_bin("obscurus")
+            .unwrap()
             .arg("gbc.sav")
-            .output()
-            .expect("Cannot find save file");
-
-        assert_eq!(String::from_utf8_lossy(&output.stdout), "");
+            .assert()
+            .success();
 
         let output = Command::new("shasum")
             .arg("image-1.pgm")
@@ -147,14 +156,11 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_file_red() {
-        clean();
-
-        let output = Command::new("./target/debug/obscurus")
+        Command::cargo_bin("obscurus")
+            .unwrap()
             .arg("gbc.sav")
-            .output()
-            .expect("Cannot fins save file");
-
-        assert_eq!(String::from_utf8_lossy(&output.stdout), "");
+            .assert()
+            .success();
 
         let output = Command::new("shasum")
             .arg("image-1.pgm")
@@ -170,7 +176,7 @@ mod tests {
     }
 
     fn clean() {
-        let output = Command::new("find")
+        Command::new("find")
             .arg(".")
             .arg("-name")
             .arg("*.pgm")
