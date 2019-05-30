@@ -129,11 +129,19 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use assert_cmd::prelude::*;
     use std::process::Command;
 
     #[test]
-    fn test_file_green() {
+    fn test_image_raster_pixel_index_from_tile() {
+        assert_eq!(image_raster_pixel_index_from_tile(8, 8, 8), 1096);
+    }
+
+    // Add all the other tests
+
+    #[test]
+    fn test_functional_file_green() {
         Command::cargo_bin("obscurus")
             .unwrap()
             .arg("gbc.sav")
@@ -155,7 +163,7 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn test_file_red() {
+    fn test_functional_file_red() {
         Command::cargo_bin("obscurus")
             .unwrap()
             .arg("gbc.sav")
